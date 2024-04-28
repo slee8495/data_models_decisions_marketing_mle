@@ -326,42 +326,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><em>todo: Interpret the results. What do you conclude about the effect of Blueprinty’s software on patent success?</em></p>
 </section>
 </section>
-<section id="airbnb-case-study" class="level2">
-<h2 class="anchored" data-anchor-id="airbnb-case-study">AirBnB Case Study</h2>
-<section id="introduction-1" class="level3">
-<h3 class="anchored" data-anchor-id="introduction-1">Introduction</h3>
-<p>AirBnB is a popular platform for booking short-term rentals. In March 2017, students Annika Awad, Evan Lebo, and Anna Linden scraped of 40,000 Airbnb listings from New York City. The data include the following variables:</p>
-<div class="callout callout-style-simple callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Variable Definitions
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<pre><code>- `id` = unique ID number for each unit
-- `last_scraped` = date when information scraped
-- `host_since` = date when host first listed the unit on Airbnb
-- `days` = `last_scraped` - `host_since` = number of days the unit has been listed
-- `room_type` = Entire home/apt., Private room, or Shared room
-- `bathrooms` = number of bathrooms
-- `bedrooms` = number of bedrooms
-- `price` = price per night (dollars)
-- `number_of_reviews` = number of reviews for the unit on Airbnb
-- `review_scores_cleanliness` = a cleanliness score from reviews (1-10)
-- `review_scores_location` = a "quality of location" score from reviews (1-10)
-- `review_scores_value` = a "quality of value" score from reviews (1-10)
-- `instant_bookable` = "t" if instantly bookable, "f" if not</code></pre>
-</div>
-</div>
-</div>
-<p><em>todo: Assume the number of reviews is a good proxy for the number of bookings. Perform some exploratory data analysis to get a feel for the data, handle or drop observations with missing values on relevant variables, build one or more models (e.g., a poisson regression model for the number of bookings as proxied by the number of reviews), and interpret model coefficients to describe variation in the number of reviews as a function of the variables provided.</em></p>
-</section>
-</section>
 
 </main>
 <!-- /main column -->
