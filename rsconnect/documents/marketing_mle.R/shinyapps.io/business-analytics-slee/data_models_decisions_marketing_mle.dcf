@@ -1,0 +1,12 @@
+name: data_models_decisions_marketing_mle
+title: data_models_decisions_marketing_mle
+username: business-analytics-slee
+account: business-analytics-slee
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 11882130
+bundleId: 8550782
+url: https://business-analytics-slee.shinyapps.io/data_models_decisions_marketing_mle/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
