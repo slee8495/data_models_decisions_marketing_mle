@@ -132,30 +132,117 @@ The data suggest that Blueprinty customers generally have a higher average paten
 
 <br><br>
 
-Blueprinty customers are not selected at random. It may be important to account for systematic differences in the age and regional location of customers vs non-customers.
+Now, I will compare the distribution of Blueprinty's customers across different regions, and their ages. I will find that certain regions have a higher concentration of customers, and there are specific age groups that are likely to be more prominent within our customer base. These patterns will suggest opportunities for targeted marketing campaigns and tailored service offerings based on regional and demographic trends.
 
-_todo: Compare regions and ages by customer status. What do you observe?_
+```{python}
+# Proportions of firms in each region by customer status
+region_customer = customers["region"].value_counts(normalize=True)
+region_non_customer = non_customers["region"].value_counts(normalize=True)
 
+# Summary statistics for age by customer status
+age_customer = customers["age"].describe()
+age_non_customer = non_customers["age"].describe()
+
+(region_customer, region_non_customer), (age_customer, age_non_customer) 
+
+
+```
+
+
+#### Regional Distribution
+- Customers: A significant proportion of Blueprinty's customers are located in the Northeast (57.36%), followed by the Southwest (15.74%), South (10.15%), Midwest (8.63%), and Northwest (8.12%). This suggests that the Northeast region has a particularly high concentration of Blueprinty's customer base.
+- Non-Customers: The regional distribution for non-customers is more evenly spread. The Northeast still leads (37.45%) but by a smaller margin compared to customers. The Southwest (20.41%), Midwest (15.89%), Northwest (13.12%), and South (13.12%) have a relatively more balanced distribution among non-customers.
+
+#### Age Distribution
+- Customers: The average age of Blueprinty's customer firms is 24.15 years, with a standard deviation of 7.56 years. The age range of customer firms spans from 10 to 46.5 years, with half of the customer base being 23 years old or younger.
+Non-Customers: Non-customer firms have a slightly higher average age of 26.69 years and a standard deviation of 7.14 years, ranging from 9 to 49 years. The median age is 26.5 years, indicating that non-customer firms are generally older than customer firms.
+
+#### Interpretation and Marketing Implications
+- The Northeast is a key region for Blueprinty's customers, indicating a strong market presence or a higher demand for their software in this area. This could suggest potential for further market penetration or consolidation in the Northeast.
+- The more balanced regional distribution of non-customers suggests there may be untapped potential in regions outside the Northeast, particularly in the Southwest and Midwest.
+The age distribution shows that Blueprinty's customers tend to be slightly younger firms. This could imply that younger firms are more open to adopting new software for patent applications or that Blueprinty's offerings resonate more with such firms.
+- Non-customers being slightly older could indicate market opportunities: either these firms are loyal to other products or they are not aware of the potential benefits of Blueprinty's software. This may point towards the need for outreach and education about Blueprinty's offerings, targeting older firms.
+
+
+
+<br><br>
 
 ### Estimation of Simple Poisson Model
 
 Since our outcome variable of interest can only be small integer values per a set unit of time, we can use a Poisson density to model the number of patents awarded to each engineering firm over the last 5 years. We start by estimating a simple Poisson model via Maximum Likelihood.
 
-_todo: Write down mathematically the likelihood for_ $Y \sim \text{Poisson}(\lambda)$. Note that $f(Y|\lambda) = e^{-\lambda}\lambda^Y/Y!$.
 
-_todo: Code the likelihood (or log-likelihood) function for the Poisson model. This is a function of lambda and Y. For example:_
+_todo: Code the likelihood (or log-likelihood) function for the Poisson model._
 
-```
-poisson_loglikelihood <- function(lambda, Y){
-   ...
+```{r}
+poisson_loglikelihood <- function(lambda, y) {
+  n <- length(y)
+  likelihood <- -n*lambda + sum(y*log(lambda)) - sum(lgamma(y + 1))
+  return(likelihood)
 }
+
+
 ```
+
+
 
 _todo: Use your function to plot lambda on the horizontal axis and the likelihood (or log-likelihood) on the vertical axis for a range of lambdas (use the observed number of patents as the input for Y)._
 
-_todo: If you're feeling mathematical, take the first derivative of your likelihood or log-likelihood, set it equal to zero and solve for lambda. You will find lambda_mle is Ybar, which "feels right" because the mean of a Poisson distribution is lambda._
+```{r}
+y <- blueprinty$patents 
+
+# Generate a sequence of lambda values
+lambda_values <- seq(0.1, 10, by = 0.1) 
+
+# Compute log-likelihood for each lambda
+log_likelihoods <- sapply(lambda_values, function(l) poisson_loglikelihood(l, y))
+
+# Plotting the log-likelihood against lambda
+data_to_plot <- data.frame(lambda = lambda_values, log_likelihood = log_likelihoods)
+
+ggplot(data_to_plot, aes(x = lambda, y = log_likelihood)) +
+  geom_line() +
+  labs(title = "Log-Likelihood of Poisson Model",
+       x = "Lambda (\u03BB)",
+       y = "Log-Likelihood") +
+  theme_minimal()
+
+
+```
+
+
+
 
 _todo: Find the MLE by optimizing your likelihood function with optim() in R or sp.optimize() in Python._
+
+```{r}
+# Define the negative log-likelihood function for the Poisson distribution
+neg_log_likelihood_poisson <- function(lambda, y) {
+  if (lambda <= 0) {
+    return(Inf)  # Return a large number to avoid log of non-positive numbers
+  }
+  n <- length(y)
+  likelihood <- n * lambda - sum(y * log(lambda)) + sum(lgamma(y + 1))
+  return(likelihood)
+}
+
+# Assuming 'y' is your vector of observed patent counts
+y <- blueprinty$patents  
+
+# Use optim() to minimize the negative log-likelihood
+# Starting value for lambda is chosen as the mean of y, which is a reasonable initial guess
+result <- optim(par = mean(y), fn = neg_log_likelihood_poisson, y = y, method = "BFGS")
+
+# The MLE of lambda
+lambda_mle <- result$par
+
+# Output the MLE of lambda
+lambda_mle
+
+
+
+```
+
 
 
 ### Estimation of Poisson Regression Model
@@ -164,15 +251,66 @@ Next, we extend our simple Poisson model to a Poisson Regression Model such that
 
 _todo: Update your likelihood or log-likelihood function with an additional argument to take in a covariate matrix X. Also change the parameter of the model from lambda to the beta vector. In this model, lambda must be a positive number, so we choose the inverse link function g() to be exp() so that_ $\lambda_i = e^{X_i'\beta}$. _For example:_
 
-```
-poisson_regression_likelihood <- function(beta, Y, X){
-   ...
+```{r}
+poisson_regression_likelihood <- function(beta, Y, X) {
+  lambda <- exp(X %*% beta)
+  log_likelihood <- -sum(lambda) + sum(Y * log(lambda)) - sum(lgamma(Y + 1))
+  return(-log_likelihood)
 }
 ```
 
 _todo: Use your function along with R's optim() or Python's sp.optimize() to find the MLE vector and the Hessian of the Poisson model with covariates. Specifically, the first column of X should be all 1's to enable a constant term in the model, and the subsequent columns should be age, age squared, binary variables for all but one of the regions, and the binary customer variable. Use the Hessian to find standard errors of the beta parameter estimates and present a table of coefficients and standard errors._
 
+```{r}
+### Prepare the Data
+blueprinty$age_squared <- blueprinty$age^2  
+blueprinty$region <- as.factor(blueprinty$region)  
+
+# Create a model matrix including intercept, age, age squared, region, and iscustomer
+# Dropping one region level to avoid dummy variable trap (reference category)
+X <- model.matrix(~ age + age_squared + region + iscustomer, data = blueprinty)
+Y <- blueprinty$patents
+
+### Find the MlE using optim()
+# Initial beta estimates
+initial_beta <- rep(0, ncol(X))
+result <- optim(par = initial_beta, fn = poisson_regression_likelihood, Y = Y, X = X, method = "BFGS", hessian = TRUE)
+beta_mle <- result$par
+
+
+### Compute Standard Errors Using the Hessian
+hessian_matrix <- result$hessian
+
+# Compute the covariance matrix by inverting the Hessian
+covariance_matrix <- solve(hessian_matrix)
+
+# Standard errors are the square roots of the diagonal elements of the covariance matrix
+std_errors <- sqrt(diag(covariance_matrix))
+
+# Create a table of coefficients and their standard errors
+coef_table <- data.frame(Estimate = beta_mle, Std_Error = std_errors)
+rownames(coef_table) <- colnames(X)
+
+# Print the table
+print(coef_table)
+
+
+```
+
+
+
 _todo: Check your results using R's glm() function or Python sm.GLM() function._
+
+```{r}
+# Fit the Poisson regression model using glm()
+poisson_glm <- glm(patents ~ age + I(age^2) + region + iscustomer, family = poisson(link = "log"), data = blueprinty)
+summary(poisson_glm)
+
+# Extract coefficients and their standard errors
+coefficients_summary <- summary(poisson_glm)$coefficients
+
+```
+
 
 _todo: Interpret the results. What do you conclude about the effect of Blueprinty's software on patent success?_
 
