@@ -172,7 +172,7 @@ The age distribution shows that Blueprinty's customers tend to be slightly young
 Since our outcome variable of interest can only be small integer values per a set unit of time, we can use a Poisson density to model the number of patents awarded to each engineering firm over the last 5 years. We start by estimating a simple Poisson model via Maximum Likelihood.
 
 
-_todo: Code the likelihood (or log-likelihood) function for the Poisson model._
+Now, I'll write the code for the likelihood or log-likelihood function of the Poisson model. This will help me analyze count data effectively, which is essential for the project's statistical modeling. By understanding and implementing this function, I'll be better equipped to handle data that inherently follows a Poisson distribution.
 
 ```{r}
 poisson_loglikelihood <- function(lambda, y) {
@@ -186,7 +186,7 @@ poisson_loglikelihood <- function(lambda, y) {
 
 
 
-_todo: Use your function to plot lambda on the horizontal axis and the likelihood (or log-likelihood) on the vertical axis for a range of lambdas (use the observed number of patents as the input for Y)._
+Next, I will use the function I developed to plot the parameter lambda on the horizontal axis against the likelihood or log-likelihood values on the vertical axis. I'll vary lambda over a range and use the observed number of patents as the input value for Y. This visual representation will help me understand how the likelihood changes with different lambda values, aiding in selecting the most appropriate lambda for our model.
 
 ```{r}
 y <- blueprinty$patents 
@@ -210,10 +210,22 @@ ggplot(data_to_plot, aes(x = lambda, y = log_likelihood)) +
 
 ```
 
+#### Plot Interpretation
+- Shape of the Curve: The curve is unimodal, displaying a clear peak where the log-likelihood is maximized. This peak corresponds to the value of 𝜆 that best fits the observed patent count data (in terms of maximizing the likelihood).
+
+- Maximum Likelihood Estimate: The 𝜆 value at the peak of the curve is the Maximum Likelihood Estimate (MLE) for the Poisson model's parameter. This value of 𝜆 is where the slope of the curve is zero (the first derivative of the log-likelihood equals zero).
+
+- Interpretation of 𝜆:
+In the context of the Poisson distribution 𝜆 represents the average number of events (patent awards in this case) occurring in a fixed interval of time or space. The plot suggests that the MLE of 𝜆 is somewhere around 3, though the exact value isn't clear from the plot and would need to be found using the optim() function or by examining the computed log-likelihoods.
+
+- Goodness of Fit: The width of the curve around the peak can give us an intuition about the precision of the estimate; a narrower peak would indicate a more precise estimate of 𝜆. However, to truly assess the goodness of fit, we would need to look at more than just the log-likelihood function, including other diagnostics such as residuals and goodness-of-fit tests.
+
+- Usefulness: The log-likelihood plot is useful in optimization as it confirms that there is a maximum point that can be reached by adjusting 
+𝜆, which is what the optim() function in R would seek to find.
 
 
+I will now proceed to find the maximum likelihood estimate (MLE) by optimizing the likelihood function. I'll use the optim() function in R to perform this optimization. This will help identify the parameter values that make the observed data most probable under the assumed statistical model, ensuring the best fit for our analysis.
 
-_todo: Find the MLE by optimizing your likelihood function with optim() in R or sp.optimize() in Python._
 
 ```{r}
 # Define the negative log-likelihood function for the Poisson distribution
@@ -244,12 +256,23 @@ lambda_mle
 ```
 
 
+The output of 3.684667 from the optim() function represents the maximum likelihood estimate (MLE) for the parameter𝜆 of the Poisson distribution, which models the number of patents awarded to each engineering firm over the last 5 years.
+
+- Mean Rate (𝜆): The MLE 𝜆 of 3.684667 suggests that, under the Poisson model, the average number of patents awarded per firm over the specified period is approximately 3.68.
+
+- Model Assumption: This estimation is based on the assumption that the number of patents awarded follows a Poisson distribution, where each count is independent of others and occurs with a constant mean rate.
+
+- Data Fit: The estimated 𝜆 is the value that makes the observed data most probable under the Poisson model, meaning that it provides the best fit to the data according to the likelihood principle.
+
+- In practical terms, this MLE can be used as an estimate for predicting the expected number of patents for a similar firm, assuming that no other information (like firm age, region, or customer status) is considered. It also serves as a baseline measure for comparisons in more complex models that include additional covariates.
+
+<br>
 
 ### Estimation of Poisson Regression Model
 
 Next, we extend our simple Poisson model to a Poisson Regression Model such that $Y_i = \text{Poisson}(\lambda_i)$ where $\lambda_i = \exp(X_i'\beta)$. The interpretation is that the success rate of patent awards is not constant across all firms ($\lambda$) but rather is a function of firm characteristics $X_i$. Specifically, we will use the covariates age, age squared, region, and whether the firm is a customer of Blueprinty.
 
-_todo: Update your likelihood or log-likelihood function with an additional argument to take in a covariate matrix X. Also change the parameter of the model from lambda to the beta vector. In this model, lambda must be a positive number, so we choose the inverse link function g() to be exp() so that_ $\lambda_i = e^{X_i'\beta}$. _For example:_
+Next, I'll enhance the flexibility and accuracy of our likelihood or log-likelihood function by including an additional argument to accommodate a covariate matrix, X. I will also adjust the model’s parameter from a single lambda to a beta vector. To ensure that lambda remains positive, as required, I’ll employ the exponential function as the inverse link function. Thus, we define lambda for each observation as $\lambda_i = e^{X_i' \beta}$. This modification allows us to model the influence of multiple covariates on our response variable, enhancing the robustness and relevance of our statistical analysis.
 
 ```{r}
 poisson_regression_likelihood <- function(beta, Y, X) {
@@ -259,7 +282,9 @@ poisson_regression_likelihood <- function(beta, Y, X) {
 }
 ```
 
-_todo: Use your function along with R's optim() or Python's sp.optimize() to find the MLE vector and the Hessian of the Poisson model with covariates. Specifically, the first column of X should be all 1's to enable a constant term in the model, and the subsequent columns should be age, age squared, binary variables for all but one of the regions, and the binary customer variable. Use the Hessian to find standard errors of the beta parameter estimates and present a table of coefficients and standard errors._
+I will now utilize the updated likelihood or log-likelihood function, incorporating the covariate matrix X, to perform parameter estimation using R's optim(). The matrix X will be structured with its first column as all 1's to include a constant term in the model. Subsequent columns will include age, age squared, binary variables representing regions (excluding one to avoid multicollinearity), and a binary variable for customer status.
+
+After determining the maximum likelihood estimate (MLE) vector, I'll use the Hessian matrix, returned by the optimization function, to calculate the standard errors of the beta parameter estimates. Finally, I will compile and present the results in a table format, showing both the coefficients and their corresponding standard errors. This approach will provide a comprehensive statistical basis for our model, ensuring precise interpretation and robust decision-making.
 
 ```{r}
 ### Prepare the Data
@@ -296,6 +321,21 @@ print(coef_table)
 
 
 ```
+
+This lists the estimated coefficients from a Poisson regression model and their respective standard errors:
+
+- Intercept (Constant term): The estimate is -0.2009 with a standard error of 0.1134. Since the Poisson model is multiplicative due to the log link function, the interpretation is not straightforward. However, this term represents the log count of patents when all other covariates are zero (which isn't necessarily a realistic scenario since age and age squared cannot be zero simultaneously).
+
+- Age: The coefficient for age is 0.1187 with a standard error of 0.0064. This suggests that, holding all other variables constant, a one-year increase in the age of a firm is associated with an 11.87% increase in the expected log count of patents awarded.
+
+- Age Squared: The age_squared term has a coefficient of -0.0022 with a standard error of 0.000077. The negative sign indicates that the relationship between age and patent count is not linear but rather parabolic, with a decreasing effect on patent count as age increases. This could suggest a peak age for firms at which the number of patents is maximized before it starts to decline.
+
+- Region: The region coefficients compare each region to the base category, which is omitted to avoid multicollinearity (commonly the first alphabetical region). For instance, being in the Northeast is associated with an increase in the expected log count of patents by 0.0207 compared to the base region, but this is not statistically significant given the relatively large standard error.
+
+- Is Customer: The coefficient for iscustomer is 0.0542 with a standard error of 0.0408. This implies that, all else being equal, firms that are customers of Blueprinty are expected to have a 5.42% increase in the log count of patents. The positive coefficient indicates a beneficial effect of using Blueprinty's software, but given the standard error, this result may not be statistically significant. To determine significance, one would typically look at the z-score (Estimate divided by Std_Error) and the corresponding p-value.
+
+- In summary, the model suggests that the age of a firm and its squared term are important factors in predicting the success rate of patent awards, indicating a non-linear relationship. The coefficients for region suggest some regional effects, but the significance of these effects cannot be determined without additional statistics (such as p-values). Finally, being a Blueprinty customer appears to be associated with a higher expected count of patent awards, though without the p-values, we cannot confidently claim statistical significance.
+
 
 
 
