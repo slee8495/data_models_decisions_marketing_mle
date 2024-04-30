@@ -337,22 +337,66 @@ This lists the estimated coefficients from a Poisson regression model and their 
 - In summary, the model suggests that the age of a firm and its squared term are important factors in predicting the success rate of patent awards, indicating a non-linear relationship. The coefficients for region suggest some regional effects, but the significance of these effects cannot be determined without additional statistics (such as p-values). Finally, being a Blueprinty customer appears to be associated with a higher expected count of patent awards, though without the p-values, we cannot confidently claim statistical significance.
 
 
+<br>
 
-
-_todo: Check your results using R's glm() function or Python sm.GLM() function._
+Next, I will validate the estimates obtained from the custom optimization by using R’s glm() function to fit the same Poisson model with our covariate matrix X. This step will serve as a robustness check, allowing us to compare the results from our manual optimization approach to those derived from established GLM methods. This comparison helps ensure our model's reliability and accuracy in predicting outcomes based on our data set.
 
 ```{r}
 # Fit the Poisson regression model using glm()
 poisson_glm <- glm(patents ~ age + I(age^2) + region + iscustomer, family = poisson(link = "log"), data = blueprinty)
 summary(poisson_glm)
 
-# Extract coefficients and their standard errors
-coefficients_summary <- summary(poisson_glm)$coefficients
 
 ```
 
 
-_todo: Interpret the results. What do you conclude about the effect of Blueprinty's software on patent success?_
+#### Model Coefficients
+- Intercept: The estimated intercept is -0.4513 with a standard error of 0.1836. It is statistically significant (p < 0.05), indicating that the base rate of patents (when all other predictors are zero) is significantly different from zero. The negative sign suggests a lower base rate of patent awards.
+
+- Age: The coefficient for age is 0.1445 with a standard error of 0.0139. It is highly significant (p < 2e-16), suggesting that as the age of a firm increases, the log count of patents typically increases. This implies a positive relationship between age and the number of patents, with each additional year increasing the expected log count of patents by 0.1445.
+
+- Age Squared (I(age^2)): The coefficient for age squared is -0.0029 with a standard error of 0.0003. It is also highly significant (p < 2e-16), indicating a quadratic relationship between age and patents. The negative coefficient suggests that the effect of age on the number of patents diminishes as age increases, pointing to a peak effect after which additional years reduce the log count of patents.
+
+- Region: The coefficients for regions are measured relative to a baseline (omitted region). The Northeast region has a positive and significant coefficient (0.0986, p < 0.05), indicating that firms in the Northeast tend to have a higher log count of patents compared to the baseline region. The coefficients for the Northwest, South, and Southwest are not statistically significant, suggesting no clear differences from the baseline region in those areas.
+
+- Is Customer (iscustomer): The coefficient for whether a firm is a customer of Blueprinty is 0.1181 with a standard error of 0.0389. It is significant (p < 0.01), indicating that firms using Blueprinty’s software have a higher log count of patents compared to non-users, after controlling for other factors.
+
+#### Model Fit
+- Null Deviance and Residual Deviance: These metrics indicate the goodness of fit of the model. The null deviance shows the deviance of a model with only the intercept, while the residual deviance shows the deviance of the model with all predictors. The reduction in deviance suggests that the model with predictors provides a better fit than the null model.
+
+- AIC: The Akaike Information Criterion for the model is 6567.7, which helps in model selection among different models. Lower AIC values generally indicate a better model.
+
+- Fisher Scoring iterations: The number of iterations taken to converge. A small number (5 in this case) typically indicates that the model converged successfully.
+
+#### Conclusion
+- The model indicates that age, region (specifically Northeast), and usage of Blueprinty’s software are significant predictors of the number of patents awarded. The age effect is nonlinear, with both positive linear and negative quadratic components. The positive coefficient for Blueprinty’s software suggests that it effectively helps firms increase their patent counts. This could be used to argue that Blueprinty's software enhances patent success, validating the software’s effectiveness for its users.
+
+<br>
+
+
+##### The results from the Poisson regression analysis provide valuable insights into the effect of Blueprinty’s software on patent success. Here are the key findings and their interpretations:
+
+#### Effect of Blueprinty’s Software on Patent Success
+- Coefficient for iscustomer: The coefficient for the iscustomer variable, which indicates whether a firm uses Blueprinty's software, is approximately 0.1181 with a standard error of 0.0389. This coefficient is statistically significant (p = 0.00241), which suggests a strong evidence of the association between using Blueprinty's software and the number of patents obtained.
+
+#### Statistical Significance and Practical Implications
+- Significance: The p-value associated with the iscustomer coefficient is well below the conventional threshold of 0.05, indicating that the results are statistically significant. This implies that the likelihood of observing such a coefficient by chance (if there were no real effect) is very low.
+
+- Magnitude of Effect: The coefficient of 0.1181 for iscustomer implies that, all else being equal, firms using Blueprinty's software are expected to have a log-count of patents that is 0.1181 units higher than firms that do not use the software. Given that the model uses a log link, this translates into a multiplicative effect on the patent count. Specifically, the expected count of patents for customers of Blueprinty is exp(0.1181) times that of non-customers, which is about a 12.5% increase in the number of patents.
+
+#### Broader Implications
+- Promotional Point: Blueprinty can use these results as a strong point in marketing and promotional materials, showcasing the statistically significant positive impact of their software on increasing patent counts among its users.
+
+- Strategic Decision Making: The clear positive effect of Blueprinty’s software on patent success could guide strategic decisions regarding product development, customer engagement, and market expansion strategies.
+
+- Customer Retention and Acquisition: Demonstrating quantifiable benefits, as revealed by this analysis, can aid in both retaining existing customers and acquiring new ones by providing empirical evidence of the software's value.
+
+#### Conclusion
+- In conclusion, the analysis strongly suggests that Blueprinty’s software has a positive effect on patent success. Firms using the software are likely to achieve a higher number of patents than those that do not, providing a quantifiable benefit of adopting Blueprinty's technology. This effect is robust across statistical controls for other factors like age and regional location of the firms.
+
+
+
+
 
 
 
