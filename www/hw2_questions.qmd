@@ -1,7 +1,7 @@
 ---
 title: "Poisson Regression Examples"
 author: "Sangho Lee"
-date: today
+date: 4/29/2024
 callout-appearance: minimal # this hides the blue "i" icon on .callout-notes
 editor_options: 
   chunk_output_type: console
@@ -363,8 +363,6 @@ summary(poisson_glm)
 
 #### Model Fit
 - Null Deviance and Residual Deviance: These metrics indicate the goodness of fit of the model. The null deviance shows the deviance of a model with only the intercept, while the residual deviance shows the deviance of the model with all predictors. The reduction in deviance suggests that the model with predictors provides a better fit than the null model.
-
-- AIC: The Akaike Information Criterion for the model is 6567.7, which helps in model selection among different models. Lower AIC values generally indicate a better model.
 
 - Fisher Scoring iterations: The number of iterations taken to converge. A small number (5 in this case) typically indicates that the model converged successfully.
 
