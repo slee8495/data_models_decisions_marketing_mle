@@ -1,5 +1,4 @@
 ---
-title: "Poisson Regression Examples"
 author: "Sangho Lee"
 date: 4/29/2024
 callout-appearance: minimal # this hides the blue "i" icon on .callout-notes
@@ -81,7 +80,6 @@ I expect to see some information about how customer status might influence paten
 <br> 
 
 ```{python}
-# Create separate dataframes for Blueprinty customers and non-customers
 customers = blueprinty[blueprinty["iscustomer"] == 1]
 non_customers = blueprinty[blueprinty["iscustomer"] == 0]
 
@@ -231,27 +229,19 @@ I will now proceed to find the maximum likelihood estimate (MLE) by optimizing t
 # Define the negative log-likelihood function for the Poisson distribution
 neg_log_likelihood_poisson <- function(lambda, y) {
   if (lambda <= 0) {
-    return(Inf)  # Return a large number to avoid log of non-positive numbers
+    return(Inf)  
   }
   n <- length(y)
   likelihood <- n * lambda - sum(y * log(lambda)) + sum(lgamma(y + 1))
   return(likelihood)
 }
 
-# Assuming 'y' is your vector of observed patent counts
 y <- blueprinty$patents  
 
-# Use optim() to minimize the negative log-likelihood
-# Starting value for lambda is chosen as the mean of y, which is a reasonable initial guess
 result <- optim(par = mean(y), fn = neg_log_likelihood_poisson, y = y, method = "BFGS")
 
-# The MLE of lambda
 lambda_mle <- result$par
-
-# Output the MLE of lambda
 lambda_mle
-
-
 
 ```
 
@@ -287,12 +277,10 @@ I will now utilize the updated likelihood or log-likelihood function, incorporat
 After determining the maximum likelihood estimate (MLE) vector, I'll use the Hessian matrix, returned by the optimization function, to calculate the standard errors of the beta parameter estimates. Finally, I will compile and present the results in a table format, showing both the coefficients and their corresponding standard errors. This approach will provide a comprehensive statistical basis for our model, ensuring precise interpretation and robust decision-making.
 
 ```{r}
-### Prepare the Data
+# Prepare the Data
 blueprinty$age_squared <- blueprinty$age^2  
 blueprinty$region <- as.factor(blueprinty$region)  
 
-# Create a model matrix including intercept, age, age squared, region, and iscustomer
-# Dropping one region level to avoid dummy variable trap (reference category)
 X <- model.matrix(~ age + age_squared + region + iscustomer, data = blueprinty)
 Y <- blueprinty$patents
 
@@ -302,8 +290,7 @@ initial_beta <- rep(0, ncol(X))
 result <- optim(par = initial_beta, fn = poisson_regression_likelihood, Y = Y, X = X, method = "BFGS", hessian = TRUE)
 beta_mle <- result$par
 
-
-### Compute Standard Errors Using the Hessian
+# Compute Standard Errors Using the Hessian
 hessian_matrix <- result$hessian
 
 # Compute the covariance matrix by inverting the Hessian
@@ -316,7 +303,6 @@ std_errors <- sqrt(diag(covariance_matrix))
 coef_table <- data.frame(Estimate = beta_mle, Std_Error = std_errors)
 rownames(coef_table) <- colnames(X)
 
-# Print the table
 print(coef_table)
 
 
